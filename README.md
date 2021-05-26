@@ -1,2 +1,2 @@
-# project1
+# project novriani
 application that compare k means n c means
