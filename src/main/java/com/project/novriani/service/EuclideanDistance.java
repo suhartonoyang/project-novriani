@@ -1,8 +1,8 @@
-package com.project.novriani.serviceImpl;
+package com.project.novriani.service;
 
 import java.util.Map;
 
-import com.project.novriani.service.Distance;
+import com.project.novriani.utils.Distance;
 
 /**
  * Calculates the distance between two items using the Euclidean formula.

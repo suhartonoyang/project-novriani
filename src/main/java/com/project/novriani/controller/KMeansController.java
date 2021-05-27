@@ -24,7 +24,7 @@ public class KMeansController {
 		Response resp = new Response();
 		
 		resp.setCode(String.valueOf(HttpStatus.OK.value()));
-		resp.setStatus(HttpStatus.OK.name());
+		resp.setMessage(HttpStatus.OK.name());
 		return ResponseEntity.ok(resp);
 	}
 }

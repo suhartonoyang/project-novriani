@@ -1,4 +1,4 @@
-package com.project.novriani.serviceImpl;
+package com.project.novriani.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,7 +9,7 @@ import java.util.Set;
 
 import com.project.novriani.bean.Centroid;
 import com.project.novriani.bean.Record;
-import com.project.novriani.service.Distance;
+import com.project.novriani.utils.Distance;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;

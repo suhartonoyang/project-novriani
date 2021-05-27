@@ -5,7 +5,7 @@ import java.util.List;
 public class Response {
 	
 	private String code;
-	private String status;
+	private String message;
 	private List<?> data;
 
 	public String getCode() {
@@ -16,12 +16,12 @@ public class Response {
 		this.code = code;
 	}
 
-	public String getStatus() {
-		return status;
+	public String getMessage() {
+		return message;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setMessage(String message) {
+		this.message = message;
 	}
 
 	public List<?> getData() {
