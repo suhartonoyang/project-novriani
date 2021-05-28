@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 28, 2021 at 09:33 AM
+-- Generation Time: May 28, 2021 at 06:58 PM
 -- Server version: 10.4.19-MariaDB
 -- PHP Version: 7.3.28
 
@@ -51,7 +51,7 @@ INSERT INTO `classroom` (`id`, `classroom_name`, `created_by`, `created_date`, `
 
 CREATE TABLE `enroll` (
   `id` bigint(20) NOT NULL,
-  `studentclassroom_id` bigint(20) NOT NULL,
+  `student_classroom_id` bigint(20) NOT NULL,
   `lesson_id` bigint(20) NOT NULL,
   `score` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -60,7 +60,7 @@ CREATE TABLE `enroll` (
 -- Dumping data for table `enroll`
 --
 
-INSERT INTO `enroll` (`id`, `studentclassroom_id`, `lesson_id`, `score`) VALUES
+INSERT INTO `enroll` (`id`, `student_classroom_id`, `lesson_id`, `score`) VALUES
 (1, 1, 1, 85),
 (2, 1, 2, 70),
 (3, 1, 3, 70),
@@ -402,15 +402,16 @@ INSERT INTO `student` (`id`, `student_name`, `created_by`, `created_date`, `upda
 (39, 'Steven', 'suhartono', '2021-05-28 09:20:46', NULL, NULL),
 (40, 'Tessalonika', 'suhartono', '2021-05-28 09:20:46', NULL, NULL),
 (41, 'Valthy', 'suhartono', '2021-05-28 09:20:46', NULL, NULL),
-(42, 'Vania', 'suhartono', '2021-05-28 09:20:46', NULL, NULL);
+(42, 'Vania', 'suhartono', '2021-05-28 09:20:46', NULL, NULL),
+(43, 'Suyanto', 'suhartono', '2021-05-28 09:20:46', NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `studentclassroom`
+-- Table structure for table `student_classroom`
 --
 
-CREATE TABLE `studentclassroom` (
+CREATE TABLE `student_classroom` (
   `id` bigint(20) NOT NULL,
   `student_id` bigint(20) NOT NULL,
   `classroom_id` bigint(20) NOT NULL,
@@ -421,10 +422,10 @@ CREATE TABLE `studentclassroom` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `studentclassroom`
+-- Dumping data for table `student_classroom`
 --
 
-INSERT INTO `studentclassroom` (`id`, `student_id`, `classroom_id`, `created_by`, `created_date`, `updated_by`, `updated_date`) VALUES
+INSERT INTO `student_classroom` (`id`, `student_id`, `classroom_id`, `created_by`, `created_date`, `updated_by`, `updated_date`) VALUES
 (1, 1, 1, 'suhartono', '2021-05-28 09:29:52', NULL, NULL),
 (2, 2, 1, 'suhartono', '2021-05-28 09:29:52', NULL, NULL),
 (3, 3, 1, 'suhartono', '2021-05-28 09:29:52', NULL, NULL),
@@ -506,7 +507,9 @@ ALTER TABLE `classroom`
 -- Indexes for table `enroll`
 --
 ALTER TABLE `enroll`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `enroll_fk1` (`lesson_id`),
+  ADD KEY `enroll_fk2` (`student_classroom_id`);
 
 --
 -- Indexes for table `lesson`
@@ -521,10 +524,12 @@ ALTER TABLE `student`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `studentclassroom`
+-- Indexes for table `student_classroom`
 --
-ALTER TABLE `studentclassroom`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `student_classroom`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `sc_fk1` (`student_id`),
+  ADD KEY `sc_fk2` (`classroom_id`);
 
 --
 -- Indexes for table `user`
@@ -560,12 +565,12 @@ ALTER TABLE `lesson`
 -- AUTO_INCREMENT for table `student`
 --
 ALTER TABLE `student`
-  MODIFY `id` bigint(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` bigint(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
--- AUTO_INCREMENT for table `studentclassroom`
+-- AUTO_INCREMENT for table `student_classroom`
 --
-ALTER TABLE `studentclassroom`
+ALTER TABLE `student_classroom`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
@@ -573,6 +578,24 @@ ALTER TABLE `studentclassroom`
 --
 ALTER TABLE `user`
   MODIFY `id` bigint(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `enroll`
+--
+ALTER TABLE `enroll`
+  ADD CONSTRAINT `enroll_fk1` FOREIGN KEY (`lesson_id`) REFERENCES `lesson` (`id`),
+  ADD CONSTRAINT `enroll_fk2` FOREIGN KEY (`student_classroom_id`) REFERENCES `student_classroom` (`id`);
+
+--
+-- Constraints for table `student_classroom`
+--
+ALTER TABLE `student_classroom`
+  ADD CONSTRAINT `sc_fk1` FOREIGN KEY (`student_id`) REFERENCES `student` (`id`),
+  ADD CONSTRAINT `sc_fk2` FOREIGN KEY (`classroom_id`) REFERENCES `classroom` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
