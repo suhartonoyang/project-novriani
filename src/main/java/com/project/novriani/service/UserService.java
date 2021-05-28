@@ -20,7 +20,7 @@ public class UserService {
 
 	public User registerUser(User newUser) {
 		newUser.setPassword(bCryptPasswordEncoder.encode(newUser.getPassword()));
-		newUser.setCreated_date(new Date());
+		newUser.setCreatedDate(new Date());
 		return userRepository.save(newUser);
 	}
 	
@@ -35,5 +35,12 @@ public class UserService {
 		
 		return user;
 	}
-
+	
+	public User getUserByUsername(String username) {
+		User user = userRepository.findByUsername(username);
+		if (user==null) 
+			return null;
+		
+		return user;
+	}
 }
