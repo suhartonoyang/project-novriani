@@ -67,7 +67,7 @@ public class KMeansController {
 	public ResponseEntity<Response> run(@RequestParam int totalClusters, @RequestParam int maxIterations) {
 		Response resp = new Response();
 		List<Cluster> clusters = kMeansService.run(totalClusters, new EuclideanDistance(), maxIterations);
-
+		
 		resp.setCode(String.valueOf(HttpStatus.OK.value()));
 		resp.setMessage(HttpStatus.OK.name());
 		clusters.stream().forEach(p -> {
