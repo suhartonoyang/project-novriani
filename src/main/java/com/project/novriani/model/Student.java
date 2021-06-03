@@ -211,4 +211,10 @@ public class Student implements Serializable {
 		return result;
 	}
 
+	@Override
+	public String toString() {
+		return "Student [id=" + id + ", studentName=" + studentName + ", studentClassrooms=" + studentClassrooms + "]";
+	}
+
+	
 }

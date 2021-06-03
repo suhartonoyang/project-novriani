@@ -237,4 +237,9 @@ public class StudentClassroom implements Serializable {
 		return result;
 	}
 
+	@Override
+	public String toString() {
+		return "StudentClassroom [id=" + id + ", enrolls=" + enrolls + "]";
+	}
+
 }
