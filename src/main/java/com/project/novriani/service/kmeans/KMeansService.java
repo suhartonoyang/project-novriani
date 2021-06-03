@@ -1,4 +1,4 @@
-package com.project.novriani.service;
+package com.project.novriani.service.kmeans;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +19,8 @@ import com.project.novriani.bean.Record;
 import com.project.novriani.model.Enroll;
 import com.project.novriani.model.Student;
 import com.project.novriani.model.StudentClassroom;
+import com.project.novriani.service.StudentService;
+import com.project.novriani.service.UserService;
 import com.project.novriani.utils.Distance;
 
 @Service

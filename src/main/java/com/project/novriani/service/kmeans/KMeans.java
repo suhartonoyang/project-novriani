@@ -1,4 +1,4 @@
-package com.project.novriani.service;
+package com.project.novriani.service.kmeans;
 
 import java.util.ArrayList;
 import java.util.HashMap;
