@@ -211,17 +211,4 @@ public class Classroom implements Serializable {
 		return result;
 	}
 
-	/**
-	 * Returns a debug-friendly String representation of this instance.
-	 *
-	 * @return String representation of this instance
-	 */
-	@Override
-	public String toString() {
-		StringBuffer sb = new StringBuffer("[Classroom |");
-		sb.append(" id=").append(getId());
-		sb.append("]");
-		return sb.toString();
-	}
-
 }

@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity(name = "lesson")
 public class Lesson implements Serializable {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(unique = true, nullable = false, precision = 19)
@@ -214,17 +215,9 @@ public class Lesson implements Serializable {
 		return result;
 	}
 
-	/**
-	 * Returns a debug-friendly String representation of this instance.
-	 *
-	 * @return String representation of this instance
-	 */
 	@Override
 	public String toString() {
-		StringBuffer sb = new StringBuffer("[Lesson |");
-		sb.append(" id=").append(getId());
-		sb.append("]");
-		return sb.toString();
+		return "Lesson [id=" + id + ", lessonName=" + lessonName + "]";
 	}
 
 }

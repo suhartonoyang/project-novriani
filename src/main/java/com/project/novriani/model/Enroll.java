@@ -145,18 +145,9 @@ public class Enroll implements Serializable {
 		result = 37 * result + i;
 		return result;
 	}
-
-	/**
-	 * Returns a debug-friendly String representation of this instance.
-	 *
-	 * @return String representation of this instance
-	 */
+	
 	@Override
 	public String toString() {
-		StringBuffer sb = new StringBuffer("[Enroll |");
-		sb.append(" id=").append(getId());
-		sb.append("]");
-		return sb.toString();
+		return "Enroll [id=" + id + ", score=" + score + ", lesson=" + lesson + "]";
 	}
-
 }
