@@ -1,21 +1,24 @@
 package com.project.novriani.service.cmeans;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.QAbstractAuditable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.project.novriani.bean.ClusterCenter;
+import com.project.novriani.bean.ClusterCenter2D;
+import com.project.novriani.bean.Matrix;
+import com.project.novriani.bean.Matrix2D;
+import com.project.novriani.bean.Response;
 import com.project.novriani.model.Enroll;
 import com.project.novriani.model.Lesson;
 import com.project.novriani.model.Student;
-import com.project.novriani.model.StudentClassroom;
 import com.project.novriani.service.LessonService;
 import com.project.novriani.service.StudentService;
 
@@ -28,11 +31,11 @@ public class CMeansService1 {
 	@Autowired
 	private LessonService lessonService;
 
-	public void run() {
-		int clusterNumber = 2;
-		int maxIteration = 100;
-		int fuzziness = 2;
-		double epsilon = 0.01;
+	public List<Matrix> run(int clusterNumber, int maxIteration, int fuzziness, double epsilon) {
+//		int clusterNumber = 5;
+//		int maxIteration = 100;
+//		int fuzziness = 2;
+//		double epsilon = 0.01;
 		double finalError;
 
 		List<Student> students = studentService.getStudentAll();
@@ -41,169 +44,303 @@ public class CMeansService1 {
 				return !q.getEnrolls().isEmpty();
 			}).findAny().isPresent();
 		}).count();
-		totalData = 10;
+//		totalData = 10;
 
 		List<Lesson> lessons = lessonService.getLessonAll();
 
-		double[][] matrix = generateRandomMatrixPartition(clusterNumber, totalData);
-		double[][] newMatrix = null;
+		List<Matrix> totalFO = new ArrayList<Matrix>();
+		List<Matrix> matrixes = generateRandomMatrixPartition(clusterNumber, totalData, students);
+		List<Matrix> newMatrixes = new ArrayList<Matrix>();
+		double fLama = 0;
+
 		for (int i = 0; i < maxIteration; i++) {
-			double[][] clusterCenters = calcClusterCenter(clusterNumber, fuzziness, lessons, totalData, students, matrix);
-			double[][] totalFO = new double[totalData][clusterNumber];
-			double fBaru = objectiveFunction(clusterNumber, fuzziness, lessons, totalData, students, matrix, clusterCenters,
-					totalFO);
-			newMatrix = generateNewMatrixPartition(clusterNumber, fuzziness, lessons, totalData, totalFO);
-		
-			finalError = checkConvergence(clusterNumber, totalData, matrix, newMatrix);
-//			System.out.println("fBaru: " + fBaru);
-//			System.out.println("finalError: " + finalError);
-			if (finalError <= epsilon) {
-//				System.out.println("break di loop " + i);
-				break;
+			List<ClusterCenter> clusterCenters = calcClusterCenter(clusterNumber, fuzziness, lessons, totalData,
+					students, matrixes);
+			double fBaru = objectiveFunction(clusterNumber, fuzziness, lessons, totalData, students, matrixes,
+					clusterCenters, totalFO);
+			newMatrixes = generateNewMatrixPartition(clusterNumber, fuzziness, lessons, totalData, matrixes, totalFO);
+			matrixes = newMatrixes;
+			
+			if (i == 0) {
+				fLama = fBaru;
+			} else {
+				double selisih = fBaru - fLama;
+				if (selisih < epsilon)
+					break;
+				else
+					fLama = fBaru;
 			}
+//			matrixes = newMatrixes;
 		}
+
+		List<Matrix> finalResults = new ArrayList<Matrix>();
+		matrixes.stream().forEach(p -> {
+//			System.out.println(p);
+			List<Matrix2D> sortedColumns = new ArrayList<Matrix2D>();
+			sortedColumns.addAll(p.getColumns());
+			sortedColumns.sort(Comparator.comparing(Matrix2D::getValue).reversed());
+
+			Matrix m = new Matrix(p.getStudentId(), p.getStudentName(), p.getRow(),
+					Collections.singletonList(sortedColumns.get(0)));
+
+			finalResults.add(m);
+		});
 		
-		for (int i = 0; i < totalData; i++) {
-			for (int j = 0; j < clusterNumber; j++) {
-				System.out.println("matrix[" + i + "][" + j + "]: " + newMatrix[i][j]);
-			}
-		}
+//		finalResults.stream().forEach(p->{
+//			System.out.println(p);
+//		});
 		
+		return finalResults;
 	}
 
-	private double[][] generateRandomMatrixPartition(int clusterNumber, int totalData) {
-		double membershipValue[][] = new double[totalData][clusterNumber];
+	private List<Matrix> generateRandomMatrixPartition(int clusterNumber, int totalData, List<Student> students) {
+		List<Matrix> matrixes = new ArrayList<Matrix>();
 		Random random = new Random();
 		for (int i = 0; i < totalData; i++) {
 			float total = 0;
 			double result = 0;
+			List<Matrix2D> columns = new ArrayList<Matrix2D>();
 			for (int j = 0; j < clusterNumber; j++) {
-				membershipValue[i][j] = (Math.round(random.nextDouble() * 100.0));
-				total += membershipValue[i][j];
-//				System.out.println("======loop random======");
-//				System.out.println("membershipValue[" + i + "][" + j + "]: " + membershipValue[i][j]);
+				Matrix2D column = new Matrix2D(j, j, Math.round(random.nextDouble() * 100.0));
+				columns.add(column);
+				total += column.getValue();
 			}
 
-			// normalisasi matrix partisi
-			for (int j = 0; j < clusterNumber; j++) {
-				membershipValue[i][j] /= total;
-//				System.out.println("======loop set membershipValue======");
-//				System.out.println("membershipValue[" + i + "][" + j + "]: " + membershipValue[i][j]);
-				result += membershipValue[i][j];
+			for (Matrix2D column : columns) {
+				double value = column.getValue();
+				column.setValue(value / total);
+//				System.out.println("matrix[" + i + "][" + column.getColumn() + "]: " + column.getValue());
+				result += column.getValue();
 			}
+
+			Matrix matrix = new Matrix();
+			matrix.setStudentId(students.get(i).getId());
+			matrix.setStudentName(students.get(i).getStudentName());
+			matrix.setRow(i);
+			matrix.setColumns(columns);
+
+			matrixes.add(matrix);
 
 //			System.out.println("total [" + i + "]: " + total);
 //			System.out.println("result [" + i + "]: " + result);
 		}
+		
+//		System.out.println("Matrix");
+//		matrixes.stream().forEach(p->{
+//			System.out.println(p);
+//		});
 
-		return membershipValue;
+		return matrixes;
+
+//		return matrix;
 	}
 
-	private double[][] calcClusterCenter(int clusterNumber, int fuzziness, List<Lesson> lessons, int totalData,
-			List<Student> students, double[][] matrix) {
+	private List<ClusterCenter> calcClusterCenter(int clusterNumber, int fuzziness, List<Lesson> lessons, int totalData,
+			List<Student> students, List<Matrix> matrixes) {
 		int totalAttributes = lessons.size();
-		double clusterCenters[][] = new double[clusterNumber][totalAttributes];
-		double temp[][] = new double[clusterNumber][totalAttributes];
+		List<ClusterCenter> clusterCenters = new ArrayList<ClusterCenter>();
 
 		for (int i = 0; i < clusterNumber; i++) {
-//			System.out.println("cluster " + i);
+			int rowCluster = i;
+			List<ClusterCenter2D> columns = new ArrayList<ClusterCenter2D>();
 			for (int j = 0; j < totalAttributes; j++) {
 				int attr = j;
 				double a = 0;
 				double b = 0;
 				for (int k = 0; k < totalData; k++) {
-					// get score
+					int rowMatrix = k;
+					int columnMatrix = i;
+					double valueMatrix = 0;
 					List<Enroll> enrolls = new ArrayList<>();
-					students.get(k).getStudentClassrooms().stream().forEach(p -> {
-						enrolls.addAll(p.getEnrolls());
+					List<Matrix2D> columnsMatrix = new ArrayList<Matrix2D>();
+					matrixes.stream().filter(p -> p.getRow() == rowMatrix).forEach(q -> {
+						columnsMatrix.addAll(q.getColumns());
+						students.stream().filter(r -> r.getId() == q.getStudentId()).forEach(s -> {
+//							System.out.println(s.toString());
+							s.getStudentClassrooms().stream().forEach(t -> {
+								enrolls.addAll(t.getEnrolls());
+							});
+						});
+						;
 					});
 
-//					System.out.println(students.get(k).toString());
+					valueMatrix = columnsMatrix.stream().filter(p -> p.getColumn() == columnMatrix)
+							.mapToDouble(Matrix2D::getValue).sum();
 					int score = enrolls.stream().filter(p -> p.getLesson().getId() == lessons.get(attr).getId())
 							.mapToInt(Enroll::getScore).sum();
-//					System.out.println("Student: " + students.get(k).getStudentName() + ", Lesson id-desc: " + lessons.get(attr).getId() + "-"
+
+//					System.out.println("Lesson id-desc: " + lessons.get(attr).getId() + "-"
 //							+ lessons.get(attr).getLessonName() + ", Score: " + score);
-//					System.out.println(matrix[k][i]);
-					b += (Math.pow(matrix[k][i], fuzziness) * 1);
+//					System.out.println("matrix[" + rowMatrix + "][" + columnMatrix + "]: " + valueMatrix);
+
+					b += Math.pow(valueMatrix, fuzziness) * 1;
 					a += (b * score);
-
-//					System.out.println("a: " + a + ", b: " + b);
 				}
-				temp[i][j] = a / b;
-				clusterCenters[i][j] = temp[i][j];
 
-//				System.out.println("clusterCenter dari nilai[" + i + "][" + j + "]: " + clusterCenters[i][j]);
-//				System.out.println("===================================");
+				double value = a / b;
+
+				ClusterCenter2D column = new ClusterCenter2D(lessons.get(attr).getId(),
+						lessons.get(attr).getLessonName(), attr, value);
+				columns.add(column);
 			}
+
+			ClusterCenter clusterCenter = new ClusterCenter(rowCluster, rowCluster, columns);
+			clusterCenters.add(clusterCenter);
 		}
+
+//		clusterCenters.stream().forEach(r -> {
+//			r.getColumns().stream().forEach(c -> {
+//				System.out.println("Lesson: " + c.getLessonName());
+//				System.out.println(
+//						"clusterCenter dari nilai[" + r.getRow() + "][" + c.getColumn() + "]: " + c.getValue());
+//			});
+//		});
 
 		return clusterCenters;
 	}
 
 	private double objectiveFunction(int clusterNumber, int fuzziness, List<Lesson> lessons, int totalData,
-			List<Student> students, double[][] matrix, double[][] clusterCenters, double[][] totalFO) {
+			List<Student> students, List<Matrix> matrixes, List<ClusterCenter> clusterCenters, List<Matrix> totalFO) {
 		int totalAttributes = lessons.size();
-
-		double[][] hitungFO = new double[totalData][clusterNumber];
 		double fBaru = 0;
 
 		for (int i = 0; i < totalData; i++) {
+			int rowMatrix = i;
+			List<Matrix2D> columnsMatrix = new ArrayList<Matrix2D>();
+			List<Enroll> enrolls = new ArrayList<>();
+
+			Matrix totalFORow = new Matrix();
+			List<Matrix2D> totalFOColumns = new ArrayList<Matrix2D>();
+			totalFORow.setRow(rowMatrix);
+			matrixes.stream().filter(p -> p.getRow() == rowMatrix).forEach(q -> {
+				totalFORow.setStudentId(q.getStudentId());
+				totalFORow.setStudentName(q.getStudentName());
+
+				columnsMatrix.addAll(q.getColumns());
+				students.stream().filter(r -> r.getId() == q.getStudentId()).forEach(s -> {
+					s.getStudentClassrooms().stream().forEach(t -> {
+						enrolls.addAll(t.getEnrolls());
+					});
+				});
+				;
+			});
+
 			for (int j = 0; j < clusterNumber; j++) {
+				int columnMatrix = j;
+				int rowClusterCenter = j;
+				double valueTotalFO = 0;
 				for (int k = 0; k < totalAttributes; k++) {
 					int attr = k;
-					List<Enroll> enrolls = new ArrayList<>();
-					students.get(i).getStudentClassrooms().stream().forEach(p -> {
-						enrolls.addAll(p.getEnrolls());
-					});
 					int score = enrolls.stream().filter(p -> p.getLesson().getId() == lessons.get(attr).getId())
 							.mapToInt(Enroll::getScore).sum();
-//					System.out.println("score: " + score + " clusterCenter: " + clusterCenters[j][k]);
-					totalFO[i][j] += Math.pow((score - clusterCenters[j][k]), fuzziness);
+
+					double valueClusterCenter = clusterCenters.stream().filter(p -> p.getRow() == rowClusterCenter)
+							.flatMap(q -> q.getColumns().stream()
+									.filter(r -> r.getLessonId() == lessons.get(attr).getId() && r.getColumn() == attr))
+							.mapToDouble(ClusterCenter2D::getValue).sum();
+//					System.out.println("score: " + score + " clusterCenter[" + rowClusterCenter + "][" + attr + "]: "
+//							+ valueClusterCenter);
+					valueTotalFO += Math.pow((score - valueClusterCenter), fuzziness);
 				}
-				hitungFO[i][j] = totalFO[i][j] * Math.pow(matrix[i][j], fuzziness);
-//				System.out.println("nilai hitung sementara fungsi objektif[" + i + "][" + j + "]: " + hitungFO[i][j]);
-				fBaru += hitungFO[i][j];
+
+//				System.out.println("valueTotalFO[" + rowMatrix + "][" + columnMatrix + "]: " + valueTotalFO);
+
+				Matrix2D totalFOColumn = new Matrix2D(columnMatrix, columnMatrix, valueTotalFO);
+				totalFOColumns.add(totalFOColumn);
+				totalFORow.setColumns(totalFOColumns);
+
+				double valueMatrix = columnsMatrix.stream().filter(p -> p.getColumn() == columnMatrix)
+						.mapToDouble(Matrix2D::getValue).sum();
+//				System.out.println("matrix[" + rowMatrix + "][" + columnMatrix + "]: " + valueMatrix);
+				double hitungFO = valueTotalFO * Math.pow(valueMatrix, fuzziness);
+//				System.out.println("nilai hitung sementara fungsi objektif[" + i + "][" + j + "]: " + hitungFO);
+				fBaru += hitungFO;
+
 			}
+
+			totalFO.add(totalFORow);
 		}
+
+//		totalFO.stream().forEach(r -> {
+//			r.getColumns().stream().forEach(c -> {
+//				System.out.println("totalFO dari nilai[" + r.getRow() + "][" + c.getColumn() + "]: " + c.getValue());
+//			});
+//		});
+
 //		System.out.println("nilai fungsi objektif: " + fBaru);
 		return fBaru;
 	}
 
-	private double[][] generateNewMatrixPartition(int clusterNumber, int fuzziness, List<Lesson> lessons, int totalData,
-			double[][] totalFO) {
+	private List<Matrix> generateNewMatrixPartition(int clusterNumber, int fuzziness, List<Lesson> lessons,
+			int totalData, List<Matrix> matrixes, List<Matrix> totalFO) {
 		double pow = -1 / (fuzziness - 1);
-		double[] total = new double[totalData];
-		double totalPow = 0;
-		double[][] newMatrix = new double[totalData][clusterNumber];
+		double totalPow[] = new double[totalData];
+		List<Matrix> newMatrixes = new ArrayList<Matrix>();
 		double result = 0;
-		
+
 		// set a
 		for (int i = 0; i < totalData; i++) {
-			for (int j = 0; j < clusterNumber; j++) {
-				total[i] += totalFO[i][j];
-			}
-			totalPow += Math.pow(total[i], pow);
+			int row = i;
+			double sumValueTotalFO = totalFO.stream().filter(p -> p.getRow() == row)
+					.flatMap(q -> q.getColumns().stream()).mapToDouble(Matrix2D::getValue).sum();
+//			System.out.println("totalFO[" + row + "]: " + sumValueTotalFO);
+			totalPow[i] += Math.pow(sumValueTotalFO, pow);
 		}
-		
+
 		for (int i = 0; i < totalData; i++) {
+			int row = i;
+			List<Matrix2D> columns = new ArrayList<Matrix2D>();
 			for (int j = 0; j < clusterNumber; j++) {
-				newMatrix[i][j] = Math.pow(totalFO[i][j], pow) / totalPow;
-				result += newMatrix[i][j];
-//				System.out.println("newMatrix[" + i + "][" + j + "]: " + newMatrix[i][j]);
+				int col = j;
+				double valueTotalFO = totalFO.stream().filter(p -> p.getRow() == row)
+						.flatMap(q -> q.getColumns().stream().filter(r -> r.getColumn() == col))
+						.mapToDouble(Matrix2D::getValue).sum();
+				double value = Math.pow(valueTotalFO, pow) / totalPow[i];
+
+				Matrix2D column = new Matrix2D(col, col, value);
+				columns.add(column);
+				result += valueTotalFO;
+//				System.out.println("newMatrix[" + i + "][" + j + "]: " + value);
 			}
-			
+
+			Matrix newMatrix = new Matrix();
+			matrixes.stream().filter(p -> p.getRow() == row).forEach(q -> {
+				newMatrix.setStudentId(q.getStudentId());
+				newMatrix.setStudentName(q.getStudentName());
+				newMatrix.setRow(row);
+			});
+
+			newMatrix.setColumns(columns);
+			newMatrixes.add(newMatrix);
 //			System.out.println("result[" + i + "]" + result);
 			result = 0;
 		}
-		
-		return newMatrix;
+//		System.out.println("NEW Matrix");
+//		newMatrixes.stream().forEach(r -> {
+//			System.out.println(r);
+////			r.getColumns().stream().forEach(c -> {
+////				System.out
+////						.println("newMatrixes dari nilai[" + r.getRow() + "][" + c.getColumn() + "]: " + c.getValue());
+////			});
+//		});
+		return newMatrixes;
 	}
-	
-	private double checkConvergence(int clusterNumber, int totalData, double[][] matrix, double[][] newMatrix) {
+
+	private double checkConvergence(int clusterNumber, int totalData, int fuzziness, List<Matrix> matrixes,
+			List<Matrix> newMatrixes) {
 		double sum = 0;
 		for (int i = 0; i < totalData; i++) {
+			int row = i;
 			for (int j = 0; j < clusterNumber; j++) {
-				sum += Math.pow(newMatrix[i][j] - matrix[i][j], 2);
+				int col = j;
+				double valueNewMatrix = newMatrixes.stream().filter(p -> p.getRow() == row)
+						.flatMap(q -> q.getColumns().stream().filter(r -> r.getColumn() == col))
+						.mapToDouble(Matrix2D::getValue).sum();
+				double matrix = matrixes.stream().filter(p -> p.getRow() == row)
+						.flatMap(q -> q.getColumns().stream().filter(r -> r.getColumn() == col))
+						.mapToDouble(Matrix2D::getValue).sum();
+
+				sum += Math.pow(valueNewMatrix - matrix, fuzziness);
 			}
 		}
 		return Math.sqrt(sum);
