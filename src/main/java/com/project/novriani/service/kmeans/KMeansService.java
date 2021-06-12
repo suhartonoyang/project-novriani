@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import com.project.novriani.bean.Centroid;
 import com.project.novriani.bean.Cluster;
 import com.project.novriani.bean.Record;
+import com.project.novriani.bean.StudentClusterDTO;
+import com.project.novriani.bean.StudentClusterDTOList;
 import com.project.novriani.model.Enroll;
 import com.project.novriani.model.Student;
 import com.project.novriani.model.StudentClassroom;
@@ -86,7 +88,7 @@ public class KMeansService {
 		return data;
 	}
 
-	public static Centroid sortedCentroid(Centroid key) {
+	public Centroid sortedCentroid(Centroid key) {
 		List<Map.Entry<String, Double>> entries = new ArrayList<>(key.getCoordinates().entrySet());
 		entries.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
 
@@ -96,6 +98,22 @@ public class KMeansService {
 		}
 
 		return new Centroid(sorted);
+	}
+
+	public StudentClusterDTOList convertResultToDTO(List<Cluster> clusters) {
+		int totalCluster = clusters.size();
+		List<StudentClusterDTO> convertList = new ArrayList<StudentClusterDTO>();
+		clusters.stream().forEach(p -> {
+			p.getRecords().stream().forEach(q -> {
+				StudentClusterDTO convert = new StudentClusterDTO(q.getStudentId(), q.getStudentName(),
+						p.getClusterNumber());
+				convertList.add(convert);
+			});
+		});
+		
+		StudentClusterDTOList convertResult = new StudentClusterDTOList(totalCluster, convertList);
+		
+		return convertResult;
 	}
 
 }

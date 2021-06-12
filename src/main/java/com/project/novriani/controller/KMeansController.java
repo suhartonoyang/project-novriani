@@ -1,6 +1,7 @@
 package com.project.novriani.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.project.novriani.bean.Cluster;
 import com.project.novriani.bean.Response;
+import com.project.novriani.bean.StudentClusterDTO;
+import com.project.novriani.bean.StudentClusterDTOList;
 import com.project.novriani.model.Classroom;
 import com.project.novriani.model.Enroll;
 import com.project.novriani.model.Lesson;
@@ -63,17 +66,20 @@ public class KMeansController {
 		
 		resp.setCode(String.valueOf(HttpStatus.OK.value()));
 		resp.setMessage(HttpStatus.OK.name());
-		clusters.stream().forEach(p -> {
-			System.out.println("------------------------------ CLUSTER " + p.getClusterNumber()
-					+ "-----------------------------------");
-			System.out.println(kMeansService.sortedCentroid(p.getCentroid()));
-			List<String> memberList = p.getRecords().stream().map(n -> n.getStudentName()).collect(Collectors.toList());
-			memberList.stream().sorted();
-			System.out.print(memberList.toString());
-			System.out.println();
-			System.out.println();
-		});
-		resp.setData(clusters);
+//		clusters.stream().forEach(p -> {
+//			System.out.println("------------------------------ CLUSTER " + p.getClusterNumber()
+//					+ "-----------------------------------");
+//			System.out.println(kMeansService.sortedCentroid(p.getCentroid()));
+//			List<String> memberList = p.getRecords().stream().map(n -> n.getStudentName()).collect(Collectors.toList());
+//			memberList.stream().sorted();
+//			System.out.print(memberList.toString());
+//			System.out.println();
+//			System.out.println();
+//		});
+		
+		StudentClusterDTOList convertDTO = kMeansService.convertResultToDTO(clusters);
+		
+		resp.setData(Arrays.asList(convertDTO));
 		return ResponseEntity.ok(resp);
 	}
 
