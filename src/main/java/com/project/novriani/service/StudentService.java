@@ -15,11 +15,20 @@ import com.project.novriani.repo.StudentRepository;
 @Service
 public class StudentService {
 
-
 	@Autowired
 	private StudentRepository studentRepository;
-	
-	public List<Student> getStudentAll(){
+
+	public List<Student> getStudentAll() {
 		return StreamSupport.stream(studentRepository.findAll().spliterator(), false).collect(Collectors.toList());
 	}
+
+	public List<Student> saveAll(List<Student> students) {
+		return StreamSupport.stream(studentRepository.saveAll(students).spliterator(), false)
+				.collect(Collectors.toList());
+	}
+	
+	public Student save(Student student) {
+		return studentRepository.save(student);
+	}
+
 }

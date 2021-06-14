@@ -54,11 +54,6 @@ public class KMeansController {
 	@Autowired
 	private KMeansService kMeansService;
 
-	@GetMapping("/helloWorld")
-	public String helloWorld() {
-		return "Hello World";
-	}
-
 	@GetMapping("/run")
 	public ResponseEntity<Response> run(@RequestParam int totalClusters, @RequestParam int maxIterations) {
 		Response resp = new Response();

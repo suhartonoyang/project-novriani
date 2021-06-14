@@ -20,4 +20,8 @@ public class EnrollService {
 	public List<Enroll> getEnrollsAll(){
 		return StreamSupport.stream(enrollRepository.findAll().spliterator(), false).collect(Collectors.toList());
 	}
+	
+	public Enroll save(Enroll enroll) {
+		return enrollRepository.save(enroll);
+	}
 }

@@ -24,4 +24,8 @@ public class LessonService {
 	public List<Lesson> getLessonAll(){
 		return StreamSupport.stream(lessonRepository.findAll().spliterator(), false).collect(Collectors.toList());
 	}
+	
+	public Lesson getLessonByLessonName(String lessonName) {
+		return lessonRepository.findLessonByLessonName(lessonName);
+	}
 }

@@ -9,4 +9,5 @@ import com.project.novriani.model.Classroom;
 @Repository
 public interface ClassroomRepository extends CrudRepository<Classroom, Long>{
 
+	public Classroom findClassroomByClassroomName(String classroomName);
 }

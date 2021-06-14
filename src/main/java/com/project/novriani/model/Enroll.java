@@ -27,7 +27,7 @@ public class Enroll implements Serializable {
 	@JsonIgnoreProperties("enroll")
 	private Lesson lesson;
 	@ManyToOne
-	@JoinColumn(name = "student_classroom_id", insertable = false, updatable = false)
+	@JoinColumn(name = "student_classroom_id", insertable = true, updatable = true)
 	@JsonIgnoreProperties("enrolls")
 	private StudentClassroom studentClassroom;
 

@@ -6,8 +6,10 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -38,7 +40,7 @@ public class Classroom implements Serializable {
 //			joinColumns = @JoinColumn(name = "classroom_id"),
 //			inverseJoinColumns = @JoinColumn(name = "student_id")
 //	)
-	@OneToMany(mappedBy = "classroom")
+	@OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonIgnoreProperties(value = { "classroom" })
 	private Set<StudentClassroom> studentClassrooms;
 

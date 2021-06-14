@@ -9,4 +9,5 @@ import com.project.novriani.model.Lesson;
 @Repository
 public interface LessonRepository extends CrudRepository<Lesson, Long>{
 
+	public Lesson findLessonByLessonName(String lessonName);
 }

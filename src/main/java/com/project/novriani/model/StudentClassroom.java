@@ -6,10 +6,12 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -46,9 +48,9 @@ public class StudentClassroom implements Serializable {
 	@JoinColumn(name = "classroom_id", nullable = false)
 	@JsonIgnoreProperties("studentClassrooms")
 	private Classroom classroom;
-	@OneToMany(mappedBy = "studentClassroom")
+	@OneToMany(mappedBy = "studentClassroom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonIgnoreProperties(value = { "studentClassroom" })
-	private Set<Enroll> enrolls;
+	private List<Enroll> enrolls;
 
 	/** Default constructor. */
 	public StudentClassroom() {
@@ -65,7 +67,7 @@ public class StudentClassroom implements Serializable {
 	}
 
 	/**
-	 * Setter method for id.
+	 * Listter method for id.
 	 *
 	 * @param aId the new value for id
 	 */
@@ -83,7 +85,7 @@ public class StudentClassroom implements Serializable {
 	}
 
 	/**
-	 * Setter method for createdBy.
+	 * Listter method for createdBy.
 	 *
 	 * @param aCreatedBy the new value for createdBy
 	 */
@@ -101,7 +103,7 @@ public class StudentClassroom implements Serializable {
 	}
 
 	/**
-	 * Setter method for createdDate.
+	 * Listter method for createdDate.
 	 *
 	 * @param aCreatedDate the new value for createdDate
 	 */
@@ -119,7 +121,7 @@ public class StudentClassroom implements Serializable {
 	}
 
 	/**
-	 * Setter method for updatedBy.
+	 * Listter method for updatedBy.
 	 *
 	 * @param aUpdatedBy the new value for updatedBy
 	 */
@@ -137,7 +139,7 @@ public class StudentClassroom implements Serializable {
 	}
 
 	/**
-	 * Setter method for updatedDate.
+	 * Listter method for updatedDate.
 	 *
 	 * @param aUpdatedDate the new value for updatedDate
 	 */
@@ -155,7 +157,7 @@ public class StudentClassroom implements Serializable {
 	}
 
 	/**
-	 * Setter method for student.
+	 * Listter method for student.
 	 *
 	 * @param aStudent the new value for student
 	 */
@@ -173,7 +175,7 @@ public class StudentClassroom implements Serializable {
 	}
 
 	/**
-	 * Setter method for classroom.
+	 * Listter method for classroom.
 	 *
 	 * @param aClassroom the new value for classroom
 	 */
@@ -181,11 +183,11 @@ public class StudentClassroom implements Serializable {
 		classroom = aClassroom;
 	}
 
-	public Set<Enroll> getEnrolls() {
+	public List<Enroll> getEnrolls() {
 		return enrolls;
 	}
 
-	public void setEnrolls(Set<Enroll> enrolls) {
+	public void setEnrolls(List<Enroll> enrolls) {
 		this.enrolls = enrolls;
 	}
 
