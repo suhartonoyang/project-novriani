@@ -71,6 +71,10 @@ public class ImportFileService {
 			StudentClassroom studentClassroom = new StudentClassroom();
 			List<Enroll> enrolls = new ArrayList<Enroll>();
 
+			if (currentRow.getRowNum()==0) {
+				continue;
+			}
+			
 			int cellIdx = 0;
 			while (cells.hasNext()) {
 				Cell currentCell = cells.next();
