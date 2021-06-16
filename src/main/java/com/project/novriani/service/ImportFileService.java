@@ -58,68 +58,74 @@ public class ImportFileService {
 
 	@Transactional
 	public List<Student> importFile(InputStream input, String username) throws IOException, FileNotFoundException {
-		Workbook workbook = new XSSFWorkbook(input);
-		Sheet sheet = workbook.getSheetAt(0);
-		Iterator<Row> rows = sheet.iterator();
+		String deleteResult = studentService.deleteAll();
+		if (deleteResult.equalsIgnoreCase("OK")) {
 
-		List<Student> students = new ArrayList<Student>();
-		while (rows.hasNext()) {
-			Row currentRow = rows.next();
-			Iterator<Cell> cells = currentRow.iterator();
-			Student student = new Student();
-			HashSet<StudentClassroom> studentClassrooms = new HashSet<>();
-			StudentClassroom studentClassroom = new StudentClassroom();
-			List<Enroll> enrolls = new ArrayList<Enroll>();
+			Workbook workbook = new XSSFWorkbook(input);
+			Sheet sheet = workbook.getSheetAt(0);
+			Iterator<Row> rows = sheet.iterator();
 
-			if (currentRow.getRowNum()==0) {
-				continue;
-			}
-			
-			int cellIdx = 0;
-			while (cells.hasNext()) {
-				Cell currentCell = cells.next();
-				Lesson lesson = null;
-				Enroll enroll = new Enroll();
-				if (cellIdx == 0) {
-					student.setStudentName(currentCell.getStringCellValue());
-					student.setCreatedBy(username);
-					student.setCreatedDate(new Date());
-					student = studentService.save(student);
-				} else if (cellIdx == 1) {
-					Classroom classroom = classroomService
-							.getClassroomByClassroomName(currentCell.getStringCellValue());
-					
-					if (classroom == null) {
-						classroom = new Classroom();
-						classroom.setClassroomName(currentCell.getStringCellValue());
-						classroom.setCreatedBy(username);
-						classroom.setCreatedDate(new Date());
-						classroom = classroomService.save(classroom);
-					}
-					
-					studentClassroom.setCreatedBy(username);
-					studentClassroom.setCreatedDate(new Date());
-					studentClassroom.setStudent(student);
-					studentClassroom.setClassroom(classroom);
-					studentClassroom = studentClassroomService.save(studentClassroom);
-				} else {
-					lesson = lessonService.getLessonByLessonName(headerMap.get(cellIdx));
-					enroll.setLesson(lesson);
-					enroll.setScore((int) currentCell.getNumericCellValue());
-					enroll.setstudentClassroom(studentClassroom);
-					enroll = enrollService.save(enroll);
-					enrolls.add(enroll);
+			List<Student> students = new ArrayList<Student>();
+			while (rows.hasNext()) {
+				Row currentRow = rows.next();
+				Iterator<Cell> cells = currentRow.iterator();
+				Student student = new Student();
+				HashSet<StudentClassroom> studentClassrooms = new HashSet<>();
+				StudentClassroom studentClassroom = new StudentClassroom();
+				List<Enroll> enrolls = new ArrayList<Enroll>();
+
+				if (currentRow.getRowNum() == 0) {
+					continue;
 				}
 
-				cellIdx++;
-			}
-			studentClassroom.setEnrolls(enrolls);
-			studentClassrooms.add(studentClassroom);
-			student.setStudentClassrooms(studentClassrooms);
-			students.add(student);
-		}
+				int cellIdx = 0;
+				while (cells.hasNext()) {
+					Cell currentCell = cells.next();
+					Lesson lesson = null;
+					Enroll enroll = new Enroll();
+					if (cellIdx == 0) {
+						student.setStudentName(currentCell.getStringCellValue());
+						student.setCreatedBy(username);
+						student.setCreatedDate(new Date());
+						student = studentService.save(student);
+					} else if (cellIdx == 1) {
+						Classroom classroom = classroomService
+								.getClassroomByClassroomName(currentCell.getStringCellValue());
 
-		workbook.close();
-		return students;
+						if (classroom == null) {
+							classroom = new Classroom();
+							classroom.setClassroomName(currentCell.getStringCellValue());
+							classroom.setCreatedBy(username);
+							classroom.setCreatedDate(new Date());
+							classroom = classroomService.save(classroom);
+						}
+
+						studentClassroom.setCreatedBy(username);
+						studentClassroom.setCreatedDate(new Date());
+						studentClassroom.setStudent(student);
+						studentClassroom.setClassroom(classroom);
+						studentClassroom = studentClassroomService.save(studentClassroom);
+					} else {
+						lesson = lessonService.getLessonByLessonName(headerMap.get(cellIdx));
+						enroll.setLesson(lesson);
+						enroll.setScore((int) currentCell.getNumericCellValue());
+						enroll.setstudentClassroom(studentClassroom);
+						enroll = enrollService.save(enroll);
+						enrolls.add(enroll);
+					}
+
+					cellIdx++;
+				}
+				studentClassroom.setEnrolls(enrolls);
+				studentClassrooms.add(studentClassroom);
+				student.setStudentClassrooms(studentClassrooms);
+				students.add(student);
+			}
+
+			workbook.close();
+			return students;
+		}
+		
+		return null;
 	}
 }

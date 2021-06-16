@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +29,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.project.novriani.bean.PdfRequest;
+import com.project.novriani.bean.PdfRequestList;
 import com.project.novriani.bean.Response;
+import com.project.novriani.bean.StudentDTO;
 import com.project.novriani.model.Student;
 import com.project.novriani.service.ExportFileService;
 import com.project.novriani.service.ImportFileService;
+import com.project.novriani.service.StudentService;
 
 @RestController
 @RequestMapping("/api/data")
@@ -44,8 +48,24 @@ public class DataController {
 	@Autowired
 	private ExportFileService exportFileService;
 
+	@Autowired
+	private StudentService studentService;
+
 	@Value("${file.tempDir}")
 	private String BASE_DIR;
+
+	@GetMapping("/students")
+	public ResponseEntity<Response> getSudentAll() {
+		Response resp = new Response();
+		resp.setCode(String.valueOf(HttpStatus.OK.value()));
+		resp.setMessage(HttpStatus.OK.name());
+
+		List<Student> students = studentService.getStudentAll();
+		List<StudentDTO> dtos = studentService.convertToDto(students);
+		resp.setData(dtos);
+
+		return ResponseEntity.ok(resp);
+	}
 
 	@PostMapping("/import")
 	public ResponseEntity<Response> importFile(@RequestParam MultipartFile file, @RequestParam String username) {
@@ -64,23 +84,38 @@ public class DataController {
 		resp.setData(students);
 		return ResponseEntity.ok(resp);
 	}
+//
+//	@PostMapping("/download")
+//	public ResponseEntity<Resource> downloadFile(@RequestBody PdfRequestList data) {
+//		Response resp = new Response();
+//		resp.setCode(String.valueOf(HttpStatus.OK.value()));
+//		resp.setMessage(HttpStatus.OK.name());
+//
+//		List<Student> students = null;
+//		String path = exportFileService.writeToPDF(BASE_DIR, data);
+//		resp.setData(students);
+//
+//		Path file = Paths.get(path);
+//
+//		if (!file.startsWith(BASE_DIR))
+//			file = Paths.get(BASE_DIR).resolve(file);
+//
+//		return doOpenFile(file, null, null);
+//	}
 
 	@PostMapping("/download")
-	public ResponseEntity<Resource> downloadFile(@RequestParam String username, @RequestBody List<PdfRequest> results) {
+	public ResponseEntity<Response> downloadFile(@RequestBody PdfRequestList data) {
 		Response resp = new Response();
 		resp.setCode(String.valueOf(HttpStatus.OK.value()));
 		resp.setMessage(HttpStatus.OK.name());
 
 		List<Student> students = null;
-		String path = exportFileService.writeToPDF(BASE_DIR, results, username);
-		resp.setData(students);
-
+		String path = exportFileService.writeToPDF(BASE_DIR, data);
 		Path file = Paths.get(path);
 
-		if (!file.startsWith(BASE_DIR))
-			file = Paths.get(BASE_DIR).resolve(file);
+		resp.setData(Arrays.asList(file));
 
-		return doOpenFile(file, null, null);
+		return ResponseEntity.ok().body(resp);
 	}
 
 	private ResponseEntity<Resource> doOpenFile(Path file, String filename, String mimeType) {

@@ -27,6 +27,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.project.novriani.bean.PdfRequest;
+import com.project.novriani.bean.PdfRequestList;
 import com.project.novriani.model.Student;
 
 @Service
@@ -35,7 +36,7 @@ public class ExportFileService {
 	private Font catFont = new Font(Font.FontFamily.TIMES_ROMAN, 18, Font.BOLD);
 	private String[] headers = new String[] { "No", "Nama", "Hasil" };
 
-	public String writeToPDF(String path, List<PdfRequest> results, String username) {
+	public String writeToPDF(String path, PdfRequestList data) {
 		String fileName = "Result.pdf";
 		String file = path + fileName;
 
@@ -44,9 +45,9 @@ public class ExportFileService {
 			PdfWriter.getInstance(document, new FileOutputStream(file));
 
 			document.open();
-			addMetaData(document, username);
+			addMetaData(document, data.getUsername());
 			addTitlePage(document);
-			addTableResult(document, results);
+			addTableResult(document, data.getData());
 			document.close();
 
 		} catch (FileNotFoundException e) {
