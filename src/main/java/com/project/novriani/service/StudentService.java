@@ -13,11 +13,15 @@ import org.springframework.stereotype.Service;
 import com.project.novriani.bean.StudentDTO;
 import com.project.novriani.model.Enroll;
 import com.project.novriani.model.Student;
+import com.project.novriani.repo.ClassroomRepository;
 import com.project.novriani.repo.EnrollRepository;
 import com.project.novriani.repo.StudentRepository;
 
 @Service
 public class StudentService {
+	
+	@Autowired
+	private ClassroomRepository classroomRepository;
 
 	@Autowired
 	private StudentRepository studentRepository;
@@ -37,6 +41,7 @@ public class StudentService {
 	
 	@Transactional
 	public String deleteAll() {
+		classroomRepository.deleteAll();
 		studentRepository.deleteAll();		
 		return "OK";
 	}
