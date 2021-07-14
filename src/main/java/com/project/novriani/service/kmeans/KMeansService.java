@@ -109,9 +109,11 @@ public class KMeansService {
 						p.getClusterNumber());
 				convertList.add(convert);
 			});
+			
+			p.setRecords(null);
 		});
 		
-		StudentClusterDTOList convertResult = new StudentClusterDTOList(totalCluster, convertList);
+		StudentClusterDTOList convertResult = new StudentClusterDTOList(totalCluster, convertList, clusters);
 		
 		return convertResult;
 	}
