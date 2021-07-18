@@ -7,7 +7,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.project.novriani.bean.PdfRequest;
 import com.project.novriani.bean.PdfRequestList;
 import com.project.novriani.bean.Response;
+import com.project.novriani.bean.ResponseImport;
 import com.project.novriani.bean.StudentDTO;
 import com.project.novriani.model.Student;
 import com.project.novriani.service.ExportFileService;
@@ -74,7 +77,13 @@ public class DataController {
 		resp.setMessage(HttpStatus.OK.name());
 		List<Student> students = null;
 		try {
-			students = importFileService.importFile(file.getInputStream(), username);
+			ResponseImport respImport = importFileService.importFile(file.getInputStream(), username);
+			if (respImport.getMessage() != null) {
+				resp.setCode("500");
+				resp.setMessage(respImport.getMessage());
+				return ResponseEntity.ok(resp);
+			}
+			students = respImport.getStudents();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

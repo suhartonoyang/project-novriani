@@ -65,6 +65,8 @@ public class KMeansService {
 			long studentId = student.getId();
 			String studentName = student.getStudentName();
 			Set<StudentClassroom> studentClassrooms = student.getStudentClassrooms();
+
+			int centroidNumber = studentClassrooms.stream().mapToInt(m -> m.getCentroidNumber()).sum();
 			Set<Enroll> enrolls = studentClassrooms.stream().flatMap(m -> m.getEnrolls().stream())
 					.collect(Collectors.toSet());
 			Map<String, Double> features = new HashMap<>();
@@ -73,7 +75,7 @@ public class KMeansService {
 			}
 
 			if (!features.isEmpty()) {
-				Record record = new Record(studentId, studentName, features);
+				Record record = new Record(studentId, studentName, features, centroidNumber);
 				data.add(record);
 			}
 		}
@@ -109,12 +111,12 @@ public class KMeansService {
 						p.getClusterNumber());
 				convertList.add(convert);
 			});
-			
+
 			p.setRecords(null);
 		});
-		
+
 		StudentClusterDTOList convertResult = new StudentClusterDTOList(totalCluster, convertList, clusters);
-		
+
 		return convertResult;
 	}
 

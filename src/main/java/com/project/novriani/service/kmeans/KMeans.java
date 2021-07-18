@@ -42,7 +42,11 @@ public class KMeans {
 	public static Map<Centroid, List<Record>> fit(List<Record> records, int k, Distance distance, int maxIterations) {
 		applyPreconditions(records, k, distance, maxIterations);
 
-		List<Centroid> centroids = randomCentroids(records, k);
+		List<Centroid> centroids = setRandomCentroids(records, k);
+		centroids.stream().forEach(p->{
+			System.out.println(p);
+		});
+		
 		Map<Centroid, List<Record>> clusters = new HashMap<>();
 		Map<Centroid, List<Record>> lastState = new HashMap<>();
 
@@ -171,6 +175,23 @@ public class KMeans {
 	 * @param k       Number of clusters.
 	 * @return Collections of randomly generated centroids.
 	 */
+
+	private static List<Centroid> setRandomCentroids(List<Record> records, int k) {
+		List<Centroid> centroids = new ArrayList<Centroid>();
+		Set<String> attributes = records.stream().flatMap(e -> e.getFeatures().keySet().stream()).collect(toSet());
+		for (int i = 1; i <= k; i++) {
+			int centroidNumber = i;
+			Record record = records.stream().filter(f -> f.getCentroidNumber() == centroidNumber).findFirst()
+					.orElse(null);
+			Map<String, Double> coordinates = new HashMap<>();
+			record.getFeatures().entrySet().stream().forEach(p -> {
+				coordinates.put(p.getKey(), p.getValue());
+			});
+			centroids.add(new Centroid(coordinates));
+		}
+		return centroids;
+	}
+
 	private static List<Centroid> randomCentroids(List<Record> records, int k) {
 		List<Centroid> centroids = new ArrayList<>();
 		Map<String, Double> maxs = new HashMap<>();

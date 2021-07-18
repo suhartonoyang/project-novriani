@@ -15,17 +15,19 @@ public class Record {
 	 */
 	private final long studentId;
 	private final String studentName;
+	private final int centroidNumber;
 
 	/**
 	 * Encapsulates all attributes and their corresponding values, i.e. features.
 	 */
 	private final Map<String, Double> features;
 
-	public Record(long studentId, String studentName, Map<String, Double> features) {
+	public Record(long studentId, String studentName, Map<String, Double> features, int centroidNumber) {
 		super();
 		this.studentId = studentId;
 		this.studentName = studentName;
 		this.features = features;
+		this.centroidNumber = centroidNumber;
 	}
 
 	public long getStudentId() {
@@ -34,6 +36,10 @@ public class Record {
 
 	public String getStudentName() {
 		return studentName;
+	}
+
+	public int getCentroidNumber() {
+		return centroidNumber;
 	}
 
 	public Map<String, Double> getFeatures() {
@@ -76,7 +82,8 @@ public class Record {
 
 	@Override
 	public String toString() {
-		return "Record [studentId=" + studentId + ", studentName=" + studentName + ", features=" + features + "]";
+		return "Record [studentId=" + studentId + ", studentName=" + studentName + ", centroidNumber=" + centroidNumber
+				+ ", features=" + features + "]";
 	}
 
 }

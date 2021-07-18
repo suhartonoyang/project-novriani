@@ -4,8 +4,6 @@ package com.project.novriani.model;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -16,14 +14,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.Version;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity(name = "student_classroom")
@@ -32,6 +25,8 @@ public class StudentClassroom implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(unique = true, nullable = false, precision = 19)
 	private long id;
+	@Column(name = "centroid_number", length = 255, nullable = true)
+	private int centroidNumber;
 	@Column(name = "created_by", nullable = false, length = 255)
 	private String createdBy;
 	@Column(name = "created_date", nullable = false)
@@ -73,6 +68,14 @@ public class StudentClassroom implements Serializable {
 	 */
 	public void setId(long aId) {
 		id = aId;
+	}
+
+	public int getCentroidNumber() {
+		return centroidNumber;
+	}
+
+	public void setCentroidNumber(int centroidNumber) {
+		this.centroidNumber = centroidNumber;
 	}
 
 	/**
@@ -241,7 +244,8 @@ public class StudentClassroom implements Serializable {
 
 	@Override
 	public String toString() {
-		return "StudentClassroom [id=" + id + ", enrolls=" + enrolls + "]";
+		return "StudentClassroom [id=" + id + ", centroidNumber=" + centroidNumber + ", createdBy=" + createdBy
+				+ ", createdDate=" + createdDate + ", updatedBy=" + updatedBy + ", updatedDate=" + updatedDate
+				+ ", student=" + student + ", classroom=" + classroom + ", enrolls=" + enrolls + "]";
 	}
-
 }

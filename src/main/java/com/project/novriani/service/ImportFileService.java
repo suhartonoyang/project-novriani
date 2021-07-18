@@ -29,6 +29,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.ImmutableMap;
+import com.project.novriani.bean.Response;
+import com.project.novriani.bean.ResponseImport;
 import com.project.novriani.model.Classroom;
 import com.project.novriani.model.Enroll;
 import com.project.novriani.model.Lesson;
@@ -53,14 +55,16 @@ public class ImportFileService {
 	@Autowired
 	private EnrollService enrollService;
 
-	public Map<Integer, String> headerMap = ImmutableMap.<Integer, String>builder().put(2, "Agama").put(3, "PKN")
-			.put(4, "B Indo").put(5, "MTK").put(6, "SBDP").put(7, "PJS").build();
+	public Map<Integer, String> headerMap = ImmutableMap.<Integer, String>builder().put(3, "Agama").put(4, "PKN")
+			.put(5, "B Indo").put(6, "MTK").put(7, "SBDP").put(8, "PJS").build();
 
+	@SuppressWarnings("resource")
 	@Transactional
-	public List<Student> importFile(InputStream input, String username) throws IOException, FileNotFoundException {
+	public ResponseImport importFile(InputStream input, String username) throws IOException {
+		ResponseImport respImport = new ResponseImport();
+		String errMsg = null;
 		String deleteResult = studentService.deleteAll();
 		if (deleteResult.equalsIgnoreCase("OK")) {
-
 			Workbook workbook = new XSSFWorkbook(input);
 			Sheet sheet = workbook.getSheetAt(0);
 			Iterator<Row> rows = sheet.iterator();
@@ -105,6 +109,10 @@ public class ImportFileService {
 						studentClassroom.setStudent(student);
 						studentClassroom.setClassroom(classroom);
 						studentClassroom = studentClassroomService.save(studentClassroom);
+					} else if (cellIdx == 2) {
+						Integer centroidNumber = (int) currentCell.getNumericCellValue();
+						System.out.println("centroidNumber: " + centroidNumber);
+						studentClassroom.setCentroidNumber(centroidNumber);
 					} else {
 						lesson = lessonService.getLessonByLessonName(headerMap.get(cellIdx));
 						enroll.setLesson(lesson);
@@ -122,10 +130,27 @@ public class ImportFileService {
 				students.add(student);
 			}
 
+			boolean checkValue = students.stream().flatMap(f -> f.getStudentClassrooms().stream())
+					.anyMatch(m -> m.getCentroidNumber() < 0 || m.getCentroidNumber() > 3);
+			if (checkValue)
+				errMsg = "Kolom Centroid harus bernilai 0-2";
+
+			int totalCentroid = (int) students.stream().flatMap(f -> f.getStudentClassrooms().stream())
+					.filter(fi -> fi.getCentroidNumber() > 0).mapToInt(i -> i.getCentroidNumber()).count();
+			int totalDistinct = (int) students.stream().flatMap(f -> f.getStudentClassrooms().stream())
+					.filter(fi -> fi.getCentroidNumber() > 0).mapToInt(i -> i.getCentroidNumber()).distinct().count();
+			
+			if(totalCentroid != 2 || totalDistinct != 2)
+				errMsg = "Kolom Centroid harus diisikan ke 2 data dengan nilai 1-2";
+			
 			workbook.close();
-			return students;
+
+			respImport.setMessage(errMsg);
+			respImport.setStudents(students);
+
+			return respImport;
 		}
-		
+
 		return null;
 	}
 }
